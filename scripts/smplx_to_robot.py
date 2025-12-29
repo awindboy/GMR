@@ -21,11 +21,8 @@ if __name__ == "__main__":
         help="SMPLX motion file to load.",
         type=str,
         # required=True,
-        default="/home/yanjieze/projects/g1_wbc/GMR/motion_data/ACCAD/Male1General_c3d/General_A1_-_Stand_stageii.npz",
-        # default="/home/yanjieze/projects/g1_wbc/GMR/motion_data/ACCAD/Male2MartialArtsKicks_c3d/G8_-__roundhouse_left_stageii.npz"
-        # default="/home/yanjieze/projects/g1_wbc/TWIST-dev/motion_data/AMASS/KIT_572_dance_chacha11_stageii.npz"
-        # default="/home/yanjieze/projects/g1_wbc/GMR/motion_data/ACCAD/Male2MartialArtsPunches_c3d/E1_-__Jab_left_stageii.npz",
-        # default="/home/yanjieze/projects/g1_wbc/GMR/motion_data/ACCAD/Male1Running_c3d/Run_C24_-_quick_side_step_left_stageii.npz",
+        default="/home/robros/igris-c_retarget/GMR/motions/ACCAD/Female1Walking_c3d/B1_-_stand_to_walk_stageii.npz",
+
     )
     
     parser.add_argument(
@@ -33,7 +30,7 @@ if __name__ == "__main__":
         choices=["unitree_g1", "unitree_g1_with_hands", "unitree_h1", "unitree_h1_2",
                  "booster_t1", "booster_t1_29dof","stanford_toddy", "fourier_n1", 
                 "engineai_pm01", "kuavo_s45", "hightorque_hi", "galaxea_r1pro", "berkeley_humanoid_lite", "booster_k1",
-                "pnd_adam_lite", "openloong", "tienkung"],
+                "pnd_adam_lite", "openloong", "tienkung", "igris_c"],
         default="unitree_g1",
     )
     
@@ -55,6 +52,13 @@ if __name__ == "__main__":
         default=False,
         action="store_true",
         help="Record the video.",
+    )
+    
+    parser.add_argument(
+        "--video_path",
+        type=str,
+        default=None,
+        help="Path to save the recorded video (mp4). If not set, a default path in videos/ will be used.",
     )
 
     parser.add_argument(
@@ -87,11 +91,15 @@ if __name__ == "__main__":
         tgt_robot=args.robot,
     )
     
+    default_video_path = f"videos/{args.robot}_{args.smplx_file.split('/')[-1].split('.')[0]}.mp4"
+    video_path = args.video_path if args.video_path is not None else default_video_path
+    if args.record_video:
+        os.makedirs(os.path.dirname(video_path), exist_ok=True)
     robot_motion_viewer = RobotMotionViewer(robot_type=args.robot,
                                             motion_fps=aligned_fps,
                                             transparent_robot=0,
                                             record_video=args.record_video,
-                                            video_path=f"videos/{args.robot}_{args.smplx_file.split('/')[-1].split('.')[0]}.mp4",)
+                                            video_path=video_path,)
     
 
     curr_frame = 0
