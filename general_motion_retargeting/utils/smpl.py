@@ -182,6 +182,7 @@ def get_smplx_data_offline_fast(smplx_data, body_model, smplx_output, tgt_fps=30
     global_orient = smplx_output.global_orient.squeeze()
     full_body_pose = smplx_output.full_pose.reshape(num_frames, -1, 3)
     joints = smplx_output.joints.detach().numpy().squeeze()
+    trans = smplx_data["trans"]
     joint_names = JOINT_NAMES[: len(body_model.parents)]
     parents = body_model.parents
     
@@ -231,6 +232,13 @@ def get_smplx_data_offline_fast(smplx_data, body_model, smplx_output, tgt_fps=30
                 interp_func = interp1d(original_time, joints[:, i, j], kind='linear')
                 joints_interp.append(interp_func(target_time))
         joints = np.stack(joints_interp, axis=1).reshape(new_num_frames, -1, 3)
+
+        # Interpolate translations
+        trans_interp = []
+        for j in range(3):
+            interp_func = interp1d(original_time, trans[:, j], kind='linear')
+            trans_interp.append(interp_func(target_time))
+        trans = np.stack(trans_interp, axis=1)
         
         aligned_fps = len(global_orient) / num_frames * src_fps
     else:
@@ -256,7 +264,7 @@ def get_smplx_data_offline_fast(smplx_data, body_model, smplx_output, tgt_fps=30
 
         smplx_data_frames.append(result)
 
-    return smplx_data_frames, aligned_fps
+    return smplx_data_frames, aligned_fps, global_orient, full_body_pose, joints, trans
 
 
 

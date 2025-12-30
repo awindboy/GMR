@@ -81,7 +81,7 @@ if __name__ == "__main__":
     
     # align fps
     tgt_fps = 30
-    smplx_data_frames, aligned_fps = get_smplx_data_offline_fast(smplx_data, body_model, smplx_output, tgt_fps=tgt_fps)
+    smplx_data_frames, aligned_fps, _, _, _, _ = get_smplx_data_offline_fast(smplx_data, body_model, smplx_output, tgt_fps=tgt_fps)
     
    
     # Initialize the retargeting system

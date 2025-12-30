@@ -70,7 +70,7 @@ def process_file(smplx_file_path, tgt_file_path, tgt_robot, SMPLX_FOLDER, tgt_fo
   
     tgt_fps = 30
     try:
-        smplx_frame_data_list, aligned_fps = get_smplx_data_offline_fast(smplx_data, body_model, smplx_output, tgt_fps=tgt_fps)
+        smplx_frame_data_list, aligned_fps, aligned_global_orient, aligned_full_body_pose, aligned_joints, aligned_trans = get_smplx_data_offline_fast(smplx_data, body_model, smplx_output, tgt_fps=tgt_fps)
     except Exception as e:
         print(f"Error processing {smplx_file_path}: {e}")
         return
@@ -100,6 +100,7 @@ def process_file(smplx_file_path, tgt_file_path, tgt_robot, SMPLX_FOLDER, tgt_fo
         return
     root_rot = qpos_list[:, 3:7]
     root_rot[:, [0, 1, 2, 3]] = root_rot[:, [1, 2, 3, 0]]
+    robot_root_rot = root_rot.copy()
     dof_pos = qpos_list[:, 7:]
     num_frames = root_pos.shape[0]
 
@@ -131,13 +132,26 @@ def process_file(smplx_file_path, tgt_file_path, tgt_robot, SMPLX_FOLDER, tgt_fo
         root_pos[:, :2] -= root_pos[0, :2]
         
         
+    # MotionLibReal 호환 필드 (SMPL 기준)
+    smpl_root_rot = R.from_rotvec(aligned_global_orient).as_quat()  # xyzw
+    smpl_root_rot = smpl_root_rot[:, [3, 0, 1, 2]]  # wxyz
+    pose_aa = np.concatenate([aligned_global_orient[:, None, :], aligned_full_body_pose], axis=1)
+    smpl_joints = aligned_joints[:, :24, :]
+
     motion_data = {
-        "fps": aligned_fps,
-        "root_pos": root_pos,
-        "root_rot": root_rot,
+        # 기존 로봇 재생용 필드
+        "fps": smplx_data["mocap_frame_rate"].item(),
+        "root_pos": root_pos,  # 로봇 루트 위치
+        "root_rot": smpl_root_rot,  # SMPL 루트(wxyz) - MotionLibReal 요구
+        "robot_root_rot": robot_root_rot,  # 로봇 루트(wxyz) - 기존 호환용
         "dof_pos": dof_pos,
         "local_body_pos": local_body_pos.detach().cpu().numpy(),
         "link_body_list": body_names,
+        # MotionLibReal 요구 필드
+        "root_trans_offset": aligned_trans,
+        "pose_aa": pose_aa,
+        "dof": dof_pos,
+        "smpl_joints": smpl_joints,
     }
 
 
