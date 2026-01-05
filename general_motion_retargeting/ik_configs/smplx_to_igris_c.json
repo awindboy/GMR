@@ -1,50 +1,50 @@
 {
     "robot_root_name": "base_link",
     "human_root_name": "pelvis",
-    "ground_height": -0.1,
-    "human_height_assumption": 1.8,
+    "ground_height": 0.0,
+    "human_height_assumption": 1.54,
     "use_ik_match_table1": true,
     "use_ik_match_table2": true,
     "human_scale_table": {
-        "pelvis": 0.85,
-        "left_hip": 0.85,
-        "right_hip": 0.85,
-        "left_knee": 0.85,
-        "right_knee": 0.85,
-        "left_foot": 0.85,
-        "right_foot": 0.85,
-        "left_shoulder": 0.85,
-        "right_shoulder": 0.85,
-        "left_elbow": 0.85,
-        "right_elbow": 0.85
+        "pelvis": 1.0,
+        "left_hip": 1.0,
+        "right_hip": 1.0,
+        "left_knee": 1.0,
+        "right_knee": 1.0,
+        "left_foot": 1.0,
+        "right_foot": 1.0,
+        "left_shoulder": 1.0,
+        "right_shoulder": 1.0,
+        "left_elbow": 1.0,
+        "right_elbow": 1.0
     },
     "ik_match_table1": {
         "base_link": [
             "pelvis",
             100,
             10,
-            [0.0, 0.0, 0.2],
+            [-0.02, -0.02, 0.02],
             [0.5, -0.5, -0.5, -0.5]
         ],
         "Link_Hip_Roll_Left": [
             "left_hip",
             100,
             10,
-            [0.05, 0.05, -0.1],
+            [0.05, 0.00, -0.11],
             [0.5, -0.5, -0.5, -0.5]
         ],
         "Link_Knee_Pitch_Left": [
             "left_knee",
             100,
             10,
-            [0.1, 0.0, -0.1],
+            [0.05, 0.0, -0.0],
             [0.5, -0.5, -0.5, -0.5]
         ],
         "Link_Ankle_Roll_Left": [
             "left_foot",
             100,
             10,
-            [0.0, 0.0, -0.1],
+            [-0.0, 0.05, 0.16],
             [0.5, -0.5, -0.5, -0.5]
         ],
         "Link_Hip_Roll_Right": [
@@ -58,42 +58,42 @@
             "right_knee",
             100,
             10,
-            [0.1, 0.0, -0.1],
+            [0.05, 0.0, -0.0],
             [0.5, -0.5, -0.5, -0.5]
         ],
         "Link_Ankle_Roll_Right": [
             "right_foot",
             100,
             10,
-            [0.0, 0.0, -0.1],
+            [-0.01, -0.03, 0.17],
             [0.5, -0.5, -0.5, -0.5]
         ],
         "Link_Shoulder_Roll_Left": [
             "left_shoulder",
             100,
             10,
-            [0.05, 0.0, -0.1],
+            [0.0, -0.1, -0.2],
             [0.707, 0.0, -0.707, 0.0]
         ],
         "Link_Elbow_Pitch_Left": [
             "left_elbow",
             100,
             10,
-            [0.1, 0.05, -0.1],
+            [0.0, 0.0, -0.1],
             [0.707, 0.0, -0.707, 0.0]
         ],
         "Link_Shoulder_Roll_Right": [
             "right_shoulder",
             100,
             10,
-            [0.05, 0.0, -0.1],
+            [0.0, 0.03, -0.2],
             [0.0, 0.707, 0.0, 0.707]
         ],
         "Link_Elbow_Pitch_Right": [
             "right_elbow",
             100,
             10,
-            [0.1, -0.05, -0.1],
+            [0.0, -0.0, -0.1],
             [0.0, 0.707, 0.0, 0.707]
         ]
     },
@@ -102,28 +102,28 @@
             "pelvis",
             100,
             10,
-            [0.0, 0.0, 0.2],
+            [-0.02, -0.02, 0.02],
             [0.5, -0.5, -0.5, -0.5]
         ],
         "Link_Hip_Roll_Left": [
             "left_hip",
             100,
             5,
-            [0.05, 0.05, -0.1],
+            [0.05, 0.0, -0.11],
             [0.5, -0.5, -0.5, -0.5]
         ],
         "Link_Knee_Pitch_Left": [
             "left_knee",
             100,
             5,
-            [0.1, 0.0, -0.1],
+            [0.05, 0.0, -0.0],
             [0.5, -0.5, -0.5, -0.5]
         ],
         "Link_Ankle_Roll_Left": [
             "left_foot",
             100,
             50,
-            [0.0, 0.0, -0.1],
+            [-0.0, 0.05, 0.16],
             [0.5, -0.5, -0.5, -0.5]
         ],
         "Link_Hip_Roll_Right": [
@@ -137,42 +137,42 @@
             "right_knee",
             100,
             5,
-            [0.1, 0.0, -0.1],
+            [0.05, 0.0, -0.1],
             [0.5, -0.5, -0.5, -0.5]
         ],
         "Link_Ankle_Roll_Right": [
             "right_foot",
             100,
             50,
-            [0.0, 0.0, -0.1],
+            [-0.01, -0.03, 0.17],
             [0.5, -0.5, -0.5, -0.5]
         ],
         "Link_Shoulder_Roll_Left": [
             "left_shoulder",
             100,
             5,
-            [0.05, 0.0, -0.1],
+            [0.0, -0.1, -0.2],
             [0.707, 0.0, -0.707, 0.0]
         ],
         "Link_Elbow_Pitch_Left": [
             "left_elbow",
             100,
             5,
-            [0.1, 0.05, -0.1],
+            [0.0, 0.0, -0.1],
             [0.707, 0.0, -0.707, 0.0]
         ],
         "Link_Shoulder_Roll_Right": [
             "right_shoulder",
             100,
             5,
-            [0.05, 0.0, -0.1],
+            [0.0, 0.03, -0.2],
             [0.0, 0.707, 0.0, 0.707]
         ],
         "Link_Elbow_Pitch_Right": [
             "right_elbow",
             100,
             5,
-            [0.1, -0.05, -0.1],
+            [0.0, -0.05, -0.1],
             [0.0, 0.707, 0.0, 0.707]
         ]
     }

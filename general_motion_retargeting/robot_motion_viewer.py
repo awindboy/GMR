@@ -68,14 +68,20 @@ class RobotMotionViewer:
         self.rate_limiter = RateLimiter(frequency=self.motion_fps, warn=False)
         self.camera_follow = camera_follow
         self.record_video = record_video
+        self.paused = False
+        self._last_state = None
 
+        if keyboard_callback is None:
+            key_callback = self._keyboard_callback
+        else:
+            key_callback = keyboard_callback
 
         self.viewer = mjv.launch_passive(
             model=self.model,
             data=self.data,
             show_left_ui=False,
             show_right_ui=False, 
-            key_callback=keyboard_callback
+            key_callback=key_callback
             )      
 
         self.viewer.opt.flags[mj.mjtVisFlag.mjVIS_TRANSPARENT] = transparent_robot
@@ -92,7 +98,17 @@ class RobotMotionViewer:
             
             # Initialize renderer for video recording
             self.renderer = mj.Renderer(self.model, height=video_height, width=video_width)
-        
+
+    def _keyboard_callback(self, keycode):
+        try:
+            key_char = chr(keycode)
+        except ValueError:
+            return
+        if key_char == " ":
+            self.paused = not self.paused
+            state = "paused" if self.paused else "resumed"
+            print(f"[viewer] Playback {state}.")
+
     def step(self, 
             # robot data
             root_pos, root_rot, dof_pos, 
@@ -117,33 +133,53 @@ class RobotMotionViewer:
         else, the motion will be visualized as fast as possible.
         """
         
-        self.data.qpos[:3] = root_pos
-        self.data.qpos[3:7] = root_rot # quat need to be scalar first! for mujoco
-        self.data.qpos[7:] = dof_pos
+        if self.paused and self._last_state is not None:
+            state = self._last_state
+        else:
+            state = {
+                "root_pos": root_pos,
+                "root_rot": root_rot,
+                "dof_pos": dof_pos,
+                "human_motion_data": human_motion_data,
+                "show_human_body_name": show_human_body_name,
+                "human_point_scale": human_point_scale,
+                "human_pos_offset": human_pos_offset,
+                "follow_camera": follow_camera,
+            }
+            self._last_state = state
+
+        self.data.qpos[:3] = state["root_pos"]
+        self.data.qpos[3:7] = state["root_rot"] # quat need to be scalar first! for mujoco
+        self.data.qpos[7:] = state["dof_pos"]
         
         mj.mj_forward(self.model, self.data)
         
-        if follow_camera:
+        if state["follow_camera"]:
             self.viewer.cam.lookat = self.data.xpos[self.model.body(self.robot_base).id]
             self.viewer.cam.distance = self.viewer_cam_distance
             self.viewer.cam.elevation = -10  # 正面视角，轻微向下看
             # self.viewer.cam.azimuth = 180    # 正面朝向机器人
         
-        if human_motion_data is not None:
+        if state["human_motion_data"] is not None:
             # Clean custom geometry
             self.viewer.user_scn.ngeom = 0
             # Draw the task targets for reference
-            for human_body_name, (pos, rot) in human_motion_data.items():
+            for human_body_name, (pos, rot) in state["human_motion_data"].items():
                 draw_frame(
                     pos,
                     R.from_quat(rot, scalar_first=True).as_matrix(),
                     self.viewer,
-                    human_point_scale,
-                    pos_offset=human_pos_offset,
-                    joint_name=human_body_name if show_human_body_name else None
+                    state["human_point_scale"],
+                    pos_offset=state["human_pos_offset"],
+                    joint_name=human_body_name if state["show_human_body_name"] else None
                     )
 
         self.viewer.sync()
+        if self.paused:
+            while self.paused:
+                time.sleep(0.05)
+                self.viewer.sync()
+            return
         if rate_limit is True:
             self.rate_limiter.sleep()
 
