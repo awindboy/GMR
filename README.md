@@ -41,7 +41,7 @@ python GMR/scripts/smplx_to_robot_dataset.py \
 > - 리타게팅된 모션의 내부 구성요소는 다음과 같다.\
 > -저장 형식: pickle.dump(motion_data, ...)로 딕셔너리 저장\
 > -키/의미:\
->fps: smplx_data["mocap_frame_rate"] (원본 FPS)\
+>fps: smplx_data["mocap_frame_rate"] (원본 FPS) -> **fps:30으로 고정(PHC에서는 30프레임의 모션만 받지만 원본 모션캡쳐 데이터는 120fps다! -> 속도와 가속도가 4배가 된다. 수정 완료.)**\
 >root_pos: (N, 3) 로봇 루트 위치 (height adjust + 원점 보정 적용)\
 >root_rot: (N, 4) SMPL 루트 쿼터니언 wxyz (MotionLibReal 호환)\
 >robot_root_rot: (N, 4) 로봇 루트 쿼터니언, 코드상 wxyz -> xyzw로 재정렬된 값\
