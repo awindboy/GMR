@@ -7,6 +7,24 @@ from scipy.interpolate import interp1d
 
 import general_motion_retargeting.utils.lafan_vendor.utils as utils
 
+_YUP_TO_ZUP_ROT = R.from_euler("x", 90, degrees=True)
+_YUP_TO_ZUP_MAT = _YUP_TO_ZUP_ROT.as_matrix()
+
+
+def _rotate_positions_yup_to_zup(positions):
+    pos = np.asarray(positions)
+    orig_shape = pos.shape
+    pos = pos.reshape(-1, 3) @ _YUP_TO_ZUP_MAT.T
+    return pos.reshape(orig_shape)
+
+
+def _rotate_rotvecs_yup_to_zup(rotvecs):
+    rotvecs = np.asarray(rotvecs)
+    orig_shape = rotvecs.shape
+    rotvecs = rotvecs.reshape(-1, 3)
+    rotated = _YUP_TO_ZUP_ROT * R.from_rotvec(rotvecs)
+    return rotated.as_rotvec().reshape(orig_shape)
+
 def load_smpl_file(smpl_file):
     smpl_data = np.load(smpl_file, allow_pickle=True)
     return smpl_data
@@ -114,6 +132,8 @@ def get_smplx_data(smplx_data, body_model, smplx_output, curr_frame):
     global_orient = smplx_output.global_orient[curr_frame].squeeze()
     full_body_pose = smplx_output.full_pose[curr_frame].reshape(-1, 3)
     joints = smplx_output.joints[curr_frame].detach().numpy().squeeze()
+    global_orient = _rotate_rotvecs_yup_to_zup(global_orient)
+    joints = _rotate_positions_yup_to_zup(joints)
     joint_names = JOINT_NAMES[: len(body_model.parents)]
     parents = body_model.parents
 
@@ -244,6 +264,10 @@ def get_smplx_data_offline_fast(smplx_data, body_model, smplx_output, tgt_fps=30
     else:
         aligned_fps = tgt_fps
         
+    global_orient = _rotate_rotvecs_yup_to_zup(global_orient)
+    joints = _rotate_positions_yup_to_zup(joints)
+    trans = _rotate_positions_yup_to_zup(trans)
+
     smplx_data_frames = []
     for curr_frame in range(len(global_orient)):
         result = {}
@@ -337,6 +361,9 @@ def get_gvhmr_data_offline_fast(smplx_data, body_model, smplx_output, tgt_fps=30
     else:
         aligned_fps = tgt_fps
         
+    global_orient = _rotate_rotvecs_yup_to_zup(global_orient)
+    joints = _rotate_positions_yup_to_zup(joints)
+
     smplx_data_frames = []
     for curr_frame in range(len(global_orient)):
         result = {}

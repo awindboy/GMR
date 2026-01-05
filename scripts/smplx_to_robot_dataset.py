@@ -140,7 +140,7 @@ def process_file(smplx_file_path, tgt_file_path, tgt_robot, SMPLX_FOLDER, tgt_fo
 
     motion_data = {
         # 기존 로봇 재생용 필드
-        "fps": aligned_fps,
+        "fps": tgt_fps,
         "root_pos": root_pos,  # 로봇 루트 위치
         "root_rot": smpl_root_rot,  # SMPL 루트(wxyz) - MotionLibReal 요구
         "robot_root_rot": robot_root_rot,  # 로봇 루트(wxyz) - 기존 호환용
