@@ -1,24 +1,58 @@
 # GMR: General Motion Retargeting
 
-  <a href="https://arxiv.org/abs/2505.02833">
-    <img src="https://img.shields.io/badge/paper-arXiv%3A2505.02833-b31b1b.svg" alt="arXiv Paper"/>
-  </a> <a href="https://arxiv.org/abs/2510.02252">
-    <img src="https://img.shields.io/badge/paper-arXiv%3A2510.02252-b31b1b.svg" alt="arXiv Paper"/>
-  </a> <a href="https://opensource.org/licenses/MIT">
-    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"/>
-  </a> <a href="https://github.com/YanjieZe/GMR/releases">
-    <img src="https://img.shields.io/badge/version-0.2.0-blue.svg" alt="Version"/>
-  </a> <a href="https://x.com/ZeYanjie/status/1952446745696469334">
-    <img src="https://img.shields.io/badge/twitter-ZeYanjie-blue.svg" alt="Twitter"/>
-  </a> <a href="https://yanjieze.github.io/humanoid-foundation/#GMR">
-    <img src="https://img.shields.io/badge/blog-GMR-blue.svg" alt="Blog"/>
-  </a> <a href="https://www.bilibili.com/video/BV1p1nazeEzC/?share_source=copy_web&vd_source=c76e3ab14ac3f7219a9006b96b4b0f76">
-    <img src="https://img.shields.io/badge/tutorial-BILIBILI-blue.svg" alt="Blog"/>
-  </a>
+## Usage in Igris-c
+  - 이곳에 로봇 mesh와 xml파일을 추가.
+```bash
+GMR/assets
+```
+  - 이곳에 기술된 대로 기구학 계산이 이루어지며, 리타게팅된 모션을 보며 직접 오프셋을 맞추는 작업을 해야함. 각 축에 대해서 오프셋을 줄 때는 table 1,2를 동일하게 수정해야 한다.
+```bash
+GMR/general_motion_retargeting/ik_configs
+```
+  - 이후에 리타게팅 하는 예시 명령어는 다음과 같다.
+```bash
+python scripts/smplx_to_robot.py \
+  --smplx_file /home/robros/igris-c_retarget/GMR/motions/ACCAD/Female1Walking_c3d/B1_-_stand_to_walk_stageii.npz \
+  --robot igris_c \
+  --save_path /home/robros/igris-c_retarget/GMR/retargeted/igris_c_B1_-_stand_to_walk_stageii.pkl \
+  --rate_limit
+```
+  - 비디오 녹화를 포함하려면 다음과 같다.
+```bash
+python GMR/scripts/smplx_to_robot.py \
+  --smplx_file /home/robros/igris-c_retarget/GMR/motions/ACCAD/Female1Walking_c3d/B1_-_stand_to_walk_stageii.npz \
+  --robot igris_c \
+  --save_path /home/robros/igris-c_retarget/GMR/retargeted/igris_c_B1_-_stand_to_walk_stageii.pkl \
+  --record_video \
+  --video_path /home/robros/igris-c_retarget/GMR/videos/igris_c_B1_-_stand_to_walk_stageii.mp4 \
+  --rate_limit
 
-![Banner for GMR](./assets/GMR.png)
+```
+  - 전체 모션 폴더에 대한 리타게팅 예시 명령어는 다음과 같다.
+```bash
+python GMR/scripts/smplx_to_robot_dataset.py \
+  --src_folder /home/robros/igris-c_retarget/GMR/motions/ACCAD \
+  --tgt_folder /home/robros/igris-c_retarget/GMR/retargeted/ACCAD_igris_c \
+  --robot igris_c
 
-![GMR](./assets/GMR_pipeline.png)
+```
+> [!NOTE]
+> 현재 버전에서는 모션의 형식이 원본 GMR과 다름. PHC에 적용하기 위해 필드가 확장된 상태. 또한 현재 버전에서는 numpy 버전이 2.x인 환경에서 리타게팅 되지만 1.x 버전에서는 문법의 변화가 조금 있어 변환이 필요함. 
+> - 리타게팅된 모션의 내부 구성요소는 다음과 같다.\
+> -저장 형식: pickle.dump(motion_data, ...)로 딕셔너리 저장\
+> -키/의미:\
+>fps: smplx_data["mocap_frame_rate"] (원본 FPS)\
+>root_pos: (N, 3) 로봇 루트 위치 (height adjust + 원점 보정 적용)\
+>root_rot: (N, 4) SMPL 루트 쿼터니언 wxyz (MotionLibReal 호환)\
+>robot_root_rot: (N, 4) 로봇 루트 쿼터니언, 코드상 wxyz -> xyzw로 재정렬된 값\
+>dof_pos: (N, DOF) 로봇 조인트 각도\
+>local_body_pos: (N, B, 3) FK로 계산된 링크 위치\
+>link_body_list: 링크 이름 리스트\
+>root_trans_offset: aligned_trans (SMPL 정렬용)\
+>pose_aa: SMPL axis-angle 포즈 (global + body)\
+>dof: dof_pos 복사본\
+>smpl_joints: (N, 24, 3) SMPL 관절 위치
+
 
 #### Key features of GMR:
 - Real-time high-quality retargeting, unlock the potential of real-time whole-body teleoperation, i.e., [TWIST](https://github.com/YanjieZe/TWIST).
@@ -29,32 +63,6 @@
 > If you want this repo to support a new robot or a new human motion data format, send the robot files (`.xml`, `.urdf`, and meshes) / human motion data to <a href="mailto:lastyanjieze@gmail.com">Yanjie Ze</a> or create an issue, we will support it as soon as possible. And please make sure the robot files you sent can be open-sourced in this repo.
 
 This repo is licensed under the [MIT License](LICENSE).
-
-
-# News & Updates
-- **2025-12-02:** GMR now supports [TWIST2](https://yanjieze.com/TWIST2), which utilizes [XRoboToolkit SDK](https://github.com/XR-Robotics/XRoboToolkit-PC-Service).
-- **2025-11-17:** To join our community for discussions, you can add my WeChat contact [QR Code](https://yanjieze.com/TWIST2/images/my_wechat.jpg) with info like "[GMR] [Your Name] [Your Affiliation]".
-- **2025-11-08:** [MimicKit] from Jason Peng now supports GMR format. Check [here](https://github.com/xbpeng/MimicKit/tree/main/tools/gmr_to_mimickit).
-- **2025-10-15:** Now supporting [PAL Robotics' Talos](https://pal-robotics.com/robot/talos/), the 15th humanoid robot.
-- **2025-10-14:** GMR now supports [Nokov](https://www.nokov.com/) BVH data.
-- **2025-10-14:** Add a doc on ik config. See [DOC.md](DOC.md)
-- **2025-10-09:** Check [TWIST](https://github.com/YanjieZe/TWIST) open-sourced code for RL motion tracking.
-- **2025-10-02:** Tech report for GMR is now on [arXiv](https://arxiv.org/abs/2510.02252).
-- **2025-10-01:** GMR now supports converting GMR pickle files to CSV (for beyondmimic), check `scripts/batch_gmr_pkl_to_csv.py`.
-- **2025-09-25:** An introduction on GMR is available on [Bilibili](https://www.bilibili.com/video/BV1p1nazeEzC/?share_source=copy_web&vd_source=c76e3ab14ac3f7219a9006b96b4b0f76).
-- **2025-09-16:** GMR now supports to use [GVHMR](https://github.com/zju3dv/GVHMR) for extracting human pose from **monocular video** and retargeting to robot.
-- **2025-09-12:** GMR now supports [Tienkung](https://github.com/Open-X-Humanoid/TienKung-Lab), the 14th humanoid robot in the repo.
-- **2025-08-30:** GMR now supports [Unitree H1 2](https://www.unitree.com/cn/h1) and [PND Adam Lite](https://pndbotics.com/), the 12th and 13th humanoid robots in the repo.
-- **2025-08-28:** GMR now supports [Booster T1](https://www.boosterobotics.com/) for both 23dof and 29dof.
-- **2025-08-28:** GMR now supports using exported offline FBX motion data from [OptiTrack](https://www.optitrack.com/). 
-- **2025-08-27:** GMR now supports [Berkeley Humanoid Lite](https://github.com/HybridRobotics/Berkeley-Humanoid-Lite-Assets), the 11th humanoid robot in the repo.
-- **2025-08-24:** GMR now supports [Unitree H1](https://www.unitree.com/h1/), the 10th humanoid robot in the repo.
-- **2025-08-24:** GMR now supports velocity limits for the robot motors, `use_velocity_limit=True` by default in `GeneralMotionRetargeting` class (and we use 3*pi as the velocity limit by default); we also add printing of robot DoF/Body/Motor names and their IDs by default, and you can access them via `robot_dof_names`, `robot_body_names`, and `robot_motor_names` attributes.
-- **2025-08-10:** GMR now supports [Booster K1](https://www.boosterobotics.com/), the 9th robot in the repo.
-- **2025-08-09:** GMR now supports *Unitree G1 with Dex31 hands*.
-- **2025-08-07:** GMR now supports [Galexea R1 Pro](https://galaxea-dynamics.com/) (this is a wheeled humanoid robot!) and [KUAVO](https://www.kuavo.ai/), the 7th and 8th humanoid robots in the repo.
-- **2025-08-06:** GMR now supports [HighTorque Hi](https://www.hightorquerobotics.com/hi/), the 6th humanoid robot in the repo.
-- **2025-08-04:** Initial release of GMR. Check our [twitter post](https://x.com/ZeYanjie/status/1952446745696469334).
 
 ## Demos
 
@@ -409,37 +417,7 @@ After launching the MuJoCo visualization window and clicking on it, you can use 
 * `]`: play the next motion
 * `space`: toggle play/pause
 
-## Speed Benchmark
-
-| CPU | Retargeting Speed |
-| --- | --- |
-| AMD Ryzen Threadripper 7960X 24-Cores | 60~70 FPS |
-| 13th Gen Intel Core i9-13900K 24-Cores | 35~45 FPS |
-| TBD | TBD |
-
 ## Citation
-
-If you find our code useful, please consider citing our related papers:
-
-```bibtex
-@article{joao2025gmr,
-  title={Retargeting Matters: General Motion Retargeting for Humanoid Motion Tracking},
-  author= {Joao Pedro Araujo and Yanjie Ze and Pei Xu and Jiajun Wu and C. Karen Liu},
-  year= {2025},
-  journal= {arXiv preprint arXiv:2510.02252}
-}
-```
-
-```bibtex
-@article{ze2025twist,
-  title={TWIST: Teleoperated Whole-Body Imitation System},
-  author= {Yanjie Ze and Zixuan Chen and João Pedro Araújo and Zi-ang Cao and Xue Bin Peng and Jiajun Wu and C. Karen Liu},
-  year= {2025},
-  journal= {arXiv preprint arXiv:2505.02833}
-}
-```
-
-and this github repo:
 
 ```bibtex
 @software{ze2025gmr,
@@ -449,26 +427,3 @@ and this github repo:
   url= {https://github.com/YanjieZe/GMR},
   note= {GitHub repository}
 }
-```
-
-## Known Issues
-
-Designing a single config for all different humans is not trivial. We observe some motions might have bad retargeting results. If you observe some bad results, please let us know! We now have a collection of such motions in [TEST_MOTIONS.md](TEST_MOTIONS.md).
-
-## Acknowledgement
-
-Our IK solver is built upon [mink](https://github.com/kevinzakka/mink) and [mujoco](https://github.com/google-deepmind/mujoco). Our visualization is built upon [mujoco](https://github.com/google-deepmind/mujoco). The human motion data we try includes [AMASS](https://amass.is.tue.mpg.de/), [OMOMO](https://github.com/lijiaman/omomo_release), and [LAFAN1](https://github.com/ubisoft/ubisoft-laforge-animation-dataset).
-
-The original robot models can be found at the following locations:
-
-* [Berkley Humanoid Lite](https://github.com/HybridRobotics/Berkeley-Humanoid-Lite-Assets): CC-BY-SA-4.0 license
-* [Booster K1](https://www.boosterobotics.com/)
-* [Booster T1](https://booster.feishu.cn/wiki/UvowwBes1iNvvUkoeeVc3p5wnUg) ([English](https://booster.feishu.cn/wiki/DtFgwVXYxiBT8BksUPjcOwG4n4f))
-* [EngineAI PM01](https://github.com/engineai-robotics/engineai_ros2_workspace): [Link to file](https://github.com/engineai-robotics/engineai_ros2_workspace/blob/community/src/simulation/mujoco/assets/resource) 
-* [Fourier N1](https://github.com/FFTAI/Wiki-GRx-Gym): [Link to file](https://github.com/FFTAI/Wiki-GRx-Gym/tree/FourierN1/legged_gym/resources/robots/N1)
-* [Galaxea R1 Pro](https://galaxea-dynamics.com/): MIT license
-* [HighToqure Hi](https://www.hightorquerobotics.com/hi/)
-* [LEJU Kuavo S45](https://gitee.com/leju-robot/kuavo-ros-opensource/blob/master/LICENSE): MIT license
-* [PAL Robotics' Talos](https://github.com/google-deepmind/mujoco_menagerie): [Link to file](https://github.com/google-deepmind/mujoco_menagerie/tree/main/pal_talos)
-* [Toddlerbot](https://github.com/hshi74/toddlerbot): [Link to file](https://github.com/hshi74/toddlerbot/tree/main/toddlerbot/descriptions/toddlerbot_active)
-* [Unitree G1](https://github.com/unitreerobotics/unitree_ros): [Link to file](https://github.com/unitreerobotics/unitree_ros/tree/master/robots/g1_description)
