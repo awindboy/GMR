@@ -19,7 +19,7 @@ python scripts/smplx_to_robot.py \
 ```
   - 비디오 녹화를 포함하려면 다음과 같다.
 ```bash
-python GMR/scripts/smplx_to_robot.py \
+python scripts/smplx_to_robot.py \
   --smplx_file /home/robros/igris-c_retarget/GMR/motions/ACCAD/Female1Walking_c3d/B1_-_stand_to_walk_stageii.npz \
   --robot igris_c \
   --save_path /home/robros/igris-c_retarget/GMR/retargeted/igris_c_B1_-_stand_to_walk_stageii.pkl \
@@ -30,15 +30,15 @@ python GMR/scripts/smplx_to_robot.py \
 ```
   - 전체 모션 폴더에 대한 리타게팅 예시 명령어는 다음과 같다.
 ```bash
-python GMR/scripts/smplx_to_robot_dataset.py \
+python scripts/smplx_to_robot_dataset.py \
   --src_folder /home/robros/igris-c_retarget/GMR/motions/ACCAD \
   --tgt_folder /home/robros/igris-c_retarget/GMR/retargeted/ACCAD_igris_c \
   --robot igris_c
 
 ```
 > [!NOTE]
-> 현재 버전에서는 모션의 형식이 원본 GMR과 다름. PHC에 적용하기 위해 필드가 확장된 상태. 또한 현재 버전에서는 numpy 버전이 2.x인 환경에서 리타게팅 되지만 1.x 버전에서는 문법의 변화가 조금 있어 변환이 필요함. 
-> - 리타게팅된 모션의 내부 구성요소는 다음과 같다.\
+> 현재 버전에서는 모션의 형식이 원본 GMR과 다름. PHC에 적용하기 위해 필드가 확장된 상태. 또한 PHC에서 사용하기 위해선 다수의 모션파일을 하나로 합치는 작업과 dType 변환을 해주어야 바로 사용이 가능하다. Codex사용해서 했음.
+> - 리타게팅된 모션의 내부 구성요소는 다음과 같다.(단일 리타게팅과 폴더 리타게팅의 출력 형식 다름! PHC에 사용하려면 폴더 리타게팅을 해야 확장된 필드를 가진 모션을 얻을 수 있다.)\
 > -저장 형식: pickle.dump(motion_data, ...)로 딕셔너리 저장\
 > -키/의미:\
 >fps: smplx_data["mocap_frame_rate"] (원본 FPS) -> **fps:30으로 고정(PHC에서는 30프레임의 모션만 받지만 원본 모션캡쳐 데이터는 120fps다! -> 속도와 가속도가 4배가 된다. 수정 완료.)**\
@@ -49,7 +49,7 @@ python GMR/scripts/smplx_to_robot_dataset.py \
 >local_body_pos: (N, B, 3) FK로 계산된 링크 위치\
 >link_body_list: 링크 이름 리스트\
 >root_trans_offset: aligned_trans (SMPL 정렬용)\
->pose_aa: SMPL axis-angle 포즈 (global + body)\
+>pose_aa: 로봇 각 링크의 axis-angle 포즈 (SMPLX모션 원본의 pose_aa아님!, 별도의 계산 수행))\
 >dof: dof_pos 복사본\
 >smpl_joints: (N, 24, 3) SMPL 관절 위치
 

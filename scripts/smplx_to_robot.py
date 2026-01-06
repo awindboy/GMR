@@ -4,9 +4,12 @@ import os
 import time
 
 import numpy as np
+import torch
 
 from general_motion_retargeting import GeneralMotionRetargeting as GMR
+from general_motion_retargeting import KinematicsModel
 from general_motion_retargeting import RobotMotionViewer
+from general_motion_retargeting import torch_utils
 from general_motion_retargeting.utils.smpl import load_smplx_file, get_smplx_data_offline_fast
 
 from rich import print
@@ -81,7 +84,9 @@ if __name__ == "__main__":
     
     # align fps
     tgt_fps = 30
-    smplx_data_frames, aligned_fps, _, _, _, _ = get_smplx_data_offline_fast(smplx_data, body_model, smplx_output, tgt_fps=tgt_fps)
+    smplx_data_frames, aligned_fps, _, _, _, _ = get_smplx_data_offline_fast(
+        smplx_data, body_model, smplx_output, tgt_fps=tgt_fps
+    )
     
    
     # Initialize the retargeting system
@@ -162,6 +167,28 @@ if __name__ == "__main__":
         dof_pos = np.array([qpos[7:] for qpos in qpos_list])
         local_body_pos = None
         body_names = None
+        pose_aa = None
+        if qpos_list:
+            device = "cuda:0" if torch.cuda.is_available() else "cpu"
+            kinematics_model = KinematicsModel(retarget.xml_file, device=device)
+            body_names = kinematics_model.body_names
+            root_rot_tensor = torch.from_numpy(root_rot).to(device=device, dtype=torch.float)
+            pose_aa = np.zeros(
+                (dof_pos.shape[0], kinematics_model.num_joint, 3), dtype=np.float32
+            )
+            pose_aa[:, 0, :] = torch_utils.quat_to_exp_map(root_rot_tensor).cpu().numpy()
+            for joint_idx in range(1, kinematics_model.num_joint):
+                joint = kinematics_model._joints[joint_idx]
+                if joint.dof_dim == 0:
+                    continue
+                dof_start = joint.dof_idx
+                if joint.dof_dim == 1:
+                    axis = joint._axis.detach().cpu().numpy().astype(np.float32)
+                    pose_aa[:, joint_idx, :] = dof_pos[:, dof_start:dof_start + 1] * axis[None, :]
+                elif joint.dof_dim == 3:
+                    pose_aa[:, joint_idx, :] = dof_pos[:, dof_start:dof_start + 3]
+                else:
+                    raise ValueError(f"Unsupported dof_dim: {joint.dof_dim}")
         
         motion_data = {
             "fps": aligned_fps,
@@ -170,6 +197,7 @@ if __name__ == "__main__":
             "dof_pos": dof_pos,
             "local_body_pos": local_body_pos,
             "link_body_list": body_names,
+            "pose_aa": pose_aa,
         }
         with open(args.save_path, "wb") as f:
             pickle.dump(motion_data, f)

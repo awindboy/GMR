@@ -16,6 +16,7 @@ import pickle
 from general_motion_retargeting import GeneralMotionRetargeting as GMR
 from general_motion_retargeting.utils.smpl import load_smplx_file, get_smplx_data_offline_fast
 from general_motion_retargeting.kinematics_model import KinematicsModel
+from general_motion_retargeting import torch_utils
 from general_motion_retargeting import IK_CONFIG_ROOT
 import gc
 import time
@@ -135,7 +136,21 @@ def process_file(smplx_file_path, tgt_file_path, tgt_robot, SMPLX_FOLDER, tgt_fo
     # MotionLibReal 호환 필드 (SMPL 기준)
     smpl_root_rot = R.from_rotvec(aligned_global_orient).as_quat()  # xyzw
     smpl_root_rot = smpl_root_rot[:, [3, 0, 1, 2]]  # wxyz
-    pose_aa = np.concatenate([aligned_global_orient[:, None, :], aligned_full_body_pose], axis=1)
+    pose_aa = np.zeros((num_frames, kinematics_model.num_joint, 3), dtype=np.float32)
+    root_rot_tensor = torch.from_numpy(root_rot).to(device=device, dtype=torch.float)
+    pose_aa[:, 0, :] = torch_utils.quat_to_exp_map(root_rot_tensor).cpu().numpy()
+    for joint_idx in range(1, kinematics_model.num_joint):
+        joint = kinematics_model._joints[joint_idx]
+        if joint.dof_dim == 0:
+            continue
+        dof_start = joint.dof_idx
+        if joint.dof_dim == 1:
+            axis = joint._axis.detach().cpu().numpy().astype(np.float32)
+            pose_aa[:, joint_idx, :] = dof_pos[:, dof_start:dof_start + 1] * axis[None, :]
+        elif joint.dof_dim == 3:
+            pose_aa[:, joint_idx, :] = dof_pos[:, dof_start:dof_start + 3]
+        else:
+            raise ValueError(f"Unsupported dof_dim: {joint.dof_dim}")
     smpl_joints = aligned_joints[:, :24, :]
 
     motion_data = {
