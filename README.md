@@ -32,10 +32,18 @@ python scripts/smplx_to_robot.py \
 ```bash
 python scripts/smplx_to_robot_dataset.py \
   --src_folder /home/robros/igris-c_retarget/GMR/motions/ACCAD \
-  --tgt_folder /home/robros/igris-c_retarget/GMR/retargeted/ACCAD_igris_c \
+  --tgt_folder /home/robros/igris-c_retarget/GMR/retargeted/igris_c_motions \
   --robot igris_c
 
 ```
+- 리타게팅한 모션들을 하나의 pkl로 합칠 땐 다음 스크립트를 사용.
+ ```bash
+ python scripts/merge_motion_pkls.py \
+  --motion_folder /home/robros/igris-c_retarget/GMR/igris_c_motions \
+  --output /home/robros/igris-c_retarget/GMR/igris_c_motions/A1_amass_filtered.pkl
+```
+
+
 > [!NOTE]
 > 현재 버전에서는 모션의 형식이 원본 GMR과 다름. PHC에 적용하기 위해 필드가 확장된 상태. 또한 PHC에서 사용하기 위해선 다수의 모션파일을 하나로 합치는 작업과 dType 변환을 해주어야 바로 사용이 가능하다. Codex사용해서 했음.
 > - 리타게팅된 모션의 내부 구성요소는 다음과 같다.(단일 리타게팅과 폴더 리타게팅의 출력 형식 다름! PHC에 사용하려면 폴더 리타게팅을 해야 확장된 필드를 가진 모션을 얻을 수 있다.)\

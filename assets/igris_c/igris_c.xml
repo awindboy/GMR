@@ -6,7 +6,7 @@
   <default>
     <default class="robot">
       <default class="visual">
-        <geom group="1" type="mesh" contype="0" conaffinity="0" density="0" rgba="1 1 1 1"/>
+        <geom group="1" type="mesh" contype="0" conaffinity="0" density="0" rgba="0 1 1 1"/>
       </default>
       <default class="collision">
         <geom material="collision_material" condim="3" contype="0" conaffinity="1" priority="1" group="2" solref="0.01 1" friction="1 0.005 0.0001" />
@@ -54,7 +54,7 @@
   <asset>
     <material name="random" rgba="0.0706 0.0706 0.0706 0.7" />
     <material name="default_material" rgba="0.7 0.7 0.7 1" />
-    <material name="collision_material" rgba="1.0 0.28 0.1 0.9" />
+    <material name="collision_material" rgba="0.7 0.7 0.7 0.7" />
 
     <mesh name="Upper_Body" file="Waist_Yaw.stl" scale="0.01 0.01 0.01"/>
     <mesh name="Waist_Yaw" file="Waist_Yaw_B.stl" scale="0.01 0.01 0.01"/>
@@ -93,7 +93,7 @@
 
        
     <texture type="skybox" builtin="gradient" width="128" height="128" rgb1="1.0 1.0 1.0" rgb2="0.4 0.4 0.4"/>
-    <texture name="grid" type="2d" builtin="checker" width="512" height="512" rgb1="0.9 0.9 0.9" rgb2=".85 .85 .85"/>
+    <texture name="grid" type="2d" builtin="checker" width="512" height="512" rgb1="0.5 0.5 0.5" rgb2=".45 .45 .45"/>
     <material name="grid" texture="grid" texrepeat="1 1" texuniform="true" reflectance=".2"/>
 
   </asset>
